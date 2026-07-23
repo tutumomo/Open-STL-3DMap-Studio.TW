@@ -133,11 +133,16 @@ def preview_geojson(area: AreaData, project: Project) -> dict:
         if not simplified.is_empty:
             features.append(_feature(geom_rd_to_wgs84(simplified), {"kind": key}))
 
-    # Individual trees as points, so the user sees where they will land.
+    # Individual trees as points, so the user sees where they will land. These
+    # are already GeoJSON dicts, so they skip _feature()/mapping() (which expects
+    # a shapely geometry, not a plain dict).
     for x_rd, y_rd in area.surfaces.tree_points:
         lon, lat = rd_to_wgs84(x_rd, y_rd)
-        features.append(_feature({"type": "Point", "coordinates": [lon, lat]},
-                                 {"kind": "tree"}))
+        features.append({
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [lon, lat]},
+            "properties": {"kind": "tree"},
+        })
 
     return {"type": "FeatureCollection", "features": features}
 

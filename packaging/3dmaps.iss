@@ -3,7 +3,7 @@
 ; Vereist dat de PyInstaller-build al in "dist\Open STL-3DMap Studio" staat.
 
 #define AppName "Open STL-3DMap Studio"
-#define AppVersion "1.1.0"
+#define AppVersion "1.1.1"
 #define AppPublisher "OpenAEC Foundation"
 #define AppExe "Open STL-3DMap Studio.exe"
 #define SourceDir "..\dist\Open STL-3DMap Studio"

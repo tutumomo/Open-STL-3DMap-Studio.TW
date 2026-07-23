@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 APP_NAME = "Open STL-3DMap Studio"
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.1.1"
 
 # Public repository under the OpenAEC Foundation.
 GITHUB_OWNER = "OpenAEC-Foundation"

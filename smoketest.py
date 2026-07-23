@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 
 from app.config import Project
-from app.pipeline import area_stats, build_model, export_model, load_area
+from app.pipeline import area_stats, build_model, export_model, load_area, preview_geojson
 
 # Domplein, Utrecht - dense, has water (Oudegracht), roads and tall buildings.
 BBOX = (5.1155, 52.0875, 5.1265, 52.0940)
@@ -35,8 +35,22 @@ def main() -> int:
         print("FAIL: geen gebouwen opgehaald")
         return 1
 
+    # Exercise the map preview too - this is the /api/area path, and a bad
+    # geometry here (e.g. tree points) fails the whole area load in the UI.
+    preview = preview_geojson(area, project)
+    kinds = {}
+    for f in preview["features"]:
+        k = f["properties"].get("kind", "building")
+        kinds[k] = kinds.get(k, 0) + 1
+    print(f"preview features: {kinds}")
+    if not preview["features"]:
+        print("FAIL: lege preview")
+        return 1
+
     # Hide a couple of buildings to exercise that path.
     project.hidden_building_ids = [b.id for b in area.buildings[:3]]
+    project.settings.include_shrubs = True
+    project.settings.include_trees = True
 
     t0 = time.time()
     model = build_model(area, project)
