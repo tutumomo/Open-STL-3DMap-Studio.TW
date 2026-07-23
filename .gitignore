@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Build output
+build/
+dist/
+packaging/Output/
+packaging/app.ico
+packaging/icon_preview.png
+
+# Runtime data (per user, never committed)
+cache/
+output/
+uploads/
+projects/
+settings.json
+log.txt
+
+# OS
+Thumbs.db
+.DS_Store
+
+# misc
+build_log.txt

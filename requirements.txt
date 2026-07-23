@@ -1,0 +1,16 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+requests==2.32.3
+shapely==2.0.6
+pyproj==3.7.0
+numpy==2.2.1
+trimesh==4.5.3
+mapbox-earcut==1.0.2
+networkx==3.4.2
+lxml==5.3.0
+
+
+# Optioneel: IFC-import (Revit-export). Faalt de installatie, dan werkt de rest
+# gewoon door en kun je in plaats daarvan STL/OBJ/3MF uploaden.
+ifcopenshell==0.8.1

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Open STL-3DMap Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M16 3 L28 10 L16 17 L4 10 Z" fill="#F59E0B"/>
+        <path d="M4 10 L16 17 L16 29 L4 22 Z" fill="#D97706"/>
+        <path d="M28 10 L16 17 L16 29 L28 22 Z" fill="#EA580C" opacity="0.55"/>
+      </svg>
+      <h1>Open STL-3DMap Studio</h1>
+      <span class="ver" id="app-version">v–</span>
+    </div>
+    <div class="spacer"></div>
+    <a class="pill" id="update-pill" href="#" target="_blank" rel="noopener">⬆ Update beschikbaar</a>
+    <button class="iconbtn" id="btn-theme" title="Licht/donker">◐</button>
+    <button class="iconbtn" id="btn-feedback" title="Feedback of probleem melden">✉ Feedback</button>
+  </header>
+
+  <div id="work">
+    <aside id="panel">
+      <section>
+        <h2><i>1</i> Locatie</h2>
+        <div class="row"><input id="search" type="search" placeholder="Adres, stad of straat&hellip;" autocomplete="off"></div>
+        <ul id="search-results" class="results hidden"></ul>
+      </section>
+
+      <section>
+        <h2><i>2</i> Gebied</h2>
+        <div class="row"><button id="btn-draw" class="ghost">Teken vlak op kaart</button></div>
+        <div class="row split">
+          <label>Breedte (m)<input id="area-w" type="number" value="1200" min="100" step="50"></label>
+          <label>Hoogte (m)<input id="area-h" type="number" value="1200" min="100" step="50"></label>
+        </div>
+        <div class="row"><button id="btn-center-area" class="ghost">Vlak om midden van kaart</button></div>
+        <div class="row"><button id="btn-load" class="primary">Kaartdata ophalen</button></div>
+        <div id="area-stats" class="card hidden"></div>
+      </section>
+
+      <section id="sec-buildings" class="disabled">
+        <h2><i>3</i> Gebouwen verbergen</h2>
+        <p class="hint">Klik een gebouw om het weg te laten. Zo maak je ruimte voor je eigen ontwerp.</p>
+        <div class="row split">
+          <button id="btn-mode-click" class="ghost active">Klikken</button>
+          <button id="btn-mode-box" class="ghost">Vak slepen</button>
+        </div>
+        <div class="row"><button id="btn-clear-hidden" class="ghost">Toon alles weer</button></div>
+        <div id="hidden-count" class="card"></div>
+      </section>
+
+      <section id="sec-design" class="disabled">
+        <h2><i>4</i> Eigen ontwerp</h2>
+        <p class="hint">IFC uit Revit, of STL / OBJ / 3MF. Wordt op maaiveldhoogte geplaatst.</p>
+        <div class="row"><input id="design-file" type="file" accept=".ifc,.ifczip,.stl,.obj,.3mf,.ply,.glb,.gltf"></div>
+        <div id="design-info" class="card hidden"></div>
+        <div id="design-controls" class="hidden">
+          <div class="row split">
+            <label>Rotatie (&deg;)<input id="design-rot" type="number" value="0" step="5"></label>
+            <label>Schaal (&times;)<input id="design-scale" type="number" value="1" step="0.1" min="0.05"></label>
+          </div>
+          <div class="row split">
+            <label>Z-offset (mm)<input id="design-z" type="number" value="0" step="0.2"></label>
+            <label>CFS-slot<select id="design-slot"></select></label>
+          </div>
+          <p class="hint">Sleep de gele pin op de kaart om het ontwerp te verplaatsen.</p>
+          <div class="row"><button id="btn-design-remove" class="ghost danger">Ontwerp verwijderen</button></div>
+        </div>
+      </section>
+
+      <section>
+        <h2><i>5</i> Lagen</h2>
+        <div class="checks">
+          <label><input id="set-water" type="checkbox" checked> Water</label>
+          <label><input id="set-roads" type="checkbox" checked> Wegen</label>
+          <label><input id="set-buildings" type="checkbox" checked> Gebouwen</label>
+          <label><input id="set-shrubs" type="checkbox"> Struiken / groen</label>
+          <label><input id="set-trees" type="checkbox"> Bomen / bos</label>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <label><input id="set-detailed" type="checkbox"> Gedetailleerde daken (LoD2.2)</label>
+          <p class="hint" style="margin-top:4px">Echte dakvormen i.p.v. blokken. Traag: minuten voor een hele stad.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2><i>6</i> Printinstellingen</h2>
+        <div class="row split">
+          <label>Max. formaat (mm)<input id="set-size" type="number" value="200" min="20" max="290" step="10"></label>
+          <label>Laaghoogte (mm)<input id="set-layer" type="number" value="0.2" min="0.06" max="0.32" step="0.02"></label>
+        </div>
+        <div class="row split">
+          <label>Onderplaat top<input id="set-base" type="number" value="1.2" step="0.2"></label>
+          <label>Weg top<input id="set-road" type="number" value="1.8" step="0.2"></label>
+        </div>
+        <div class="row split">
+          <label>Maaiveld top<input id="set-land" type="number" value="2.0" step="0.2"></label>
+          <label>Hoogte &times;<input id="set-exag" type="number" value="1.5" min="0.5" max="10" step="0.5"></label>
+        </div>
+        <div class="row split">
+          <label>Min. wegbreedte<input id="set-roadw" type="number" value="0.9" min="0.4" step="0.1"></label>
+          <label>Wegen<select id="set-roadstyle">
+            <option value="recessed" selected>verdiept</option>
+            <option value="raised">verhoogd</option>
+          </select></label>
+        </div>
+      </section>
+
+      <section>
+        <h2><i>7</i> Filamentsloten (CFS)</h2>
+        <p class="hint">Wijs elke laag een slot toe. De CFS-C heeft er 4; meer kan met een handmatige wissel.</p>
+        <div id="slots" class="slots"></div>
+        <div id="slot-warn" class="slot-warn"></div>
+      </section>
+
+      <section>
+        <h2><i>8</i> Genereren</h2>
+        <label>Exportmap</label>
+        <div class="row pathrow">
+          <input id="export-dir" type="text" readonly title="Hier komen de bestanden">
+          <button id="btn-pick-dir" class="ghost" title="Andere map kiezen">&hellip;</button>
+        </div>
+        <div class="row split">
+          <button id="btn-build" class="primary">Genereren</button>
+          <button id="btn-build-as" class="ghost">Opslaan als&hellip;</button>
+        </div>
+        <div id="build-result" class="hidden"></div>
+        <div class="row"><button id="btn-reveal" class="ghost hidden">Map openen in Verkenner</button></div>
+      </section>
+    </aside>
+
+    <main id="map"></main>
+  </div>
+
+  <div id="statusbar"><span id="status">Klaar.</span></div>
+</div>
+
+<div id="busy" class="hidden"><div class="spinner"></div><span id="busy-text">Bezig&hellip;</span></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>
