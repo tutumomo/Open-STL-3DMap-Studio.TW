@@ -1,0 +1,73 @@
+name: Build Windows installer
+
+# Push a tag like v1.2.0 and this builds the installer + portable ZIP and
+# attaches them to the matching GitHub release. Run it by hand (workflow_dispatch)
+# to test a build without cutting a release - the artifacts land on the run.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+
+      - name: Create venv and install dependencies
+        shell: pwsh
+        run: |
+          uv venv --python 3.12 .venv
+          $env:VIRTUAL_ENV = "$PWD\.venv"
+          uv pip install -r requirements.txt pyinstaller==6.11.1 pillow==11.1.0
+
+      - name: Generate icon
+        shell: pwsh
+        run: .\.venv\Scripts\python.exe make_icon.py
+
+      - name: Bundle with PyInstaller
+        shell: pwsh
+        run: .\.venv\Scripts\pyinstaller.exe packaging\3dmaps.spec --noconfirm
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { $iscc = "C:\Program Files\Inno Setup 6\ISCC.exe" }
+          & $iscc packaging\3dmaps.iss
+
+      - name: Build portable ZIP
+        shell: pwsh
+        run: |
+          $ver = "${{ github.ref_name }}"
+          if (-not $ver -or $ver -eq "") { $ver = "dev" }
+          Compress-Archive -Path "dist\Open STL-3DMap Studio" `
+            -DestinationPath "packaging\Output\OpenSTL-3DMapStudio-$ver-portable.zip" `
+            -CompressionLevel Optimal
+
+      - name: Upload build artifacts (for manual runs)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: packaging/Output/*
+
+      - name: Attach to release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            packaging/Output/*.exe
+            packaging/Output/*.zip

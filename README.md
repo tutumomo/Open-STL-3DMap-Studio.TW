@@ -1,5 +1,10 @@
 # Open STL-3DMap Studio
 
+[![Build Windows installer](https://github.com/OpenAEC-Foundation/Open-STL-3DMap-Studio/actions/workflows/build-release.yml/badge.svg)](https://github.com/OpenAEC-Foundation/Open-STL-3DMap-Studio/actions/workflows/build-release.yml)
+
+**Download:** de nieuwste installer en portable ZIP staan bij de
+[releases](https://github.com/OpenAEC-Foundation/Open-STL-3DMap-Studio/releases/latest).
+
 Maakt van elk stukje Nederland een meerkleuren 3D-kaart voor bijvoorbeeld de
 Creality K1 Max met CFS. Je prikt een locatie aan op de kaart, sleept een vlak,
 verbergt de gebouwen die weg moeten, zet er eventueel je eigen Revit/IFC-ontwerp
