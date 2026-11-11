@@ -30,3 +30,5 @@ build_log.txt
 data/dtm20m/*/
 data/dtm20m/**/*.tif
 data/dtm20m/**/*.tfw
+# 開發時 app/dtm.py 的解壓目錄（打包後在 %LOCALAPPDATA%）
+dtm/

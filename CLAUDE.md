@@ -46,6 +46,12 @@ build_installer.bat                           :: make_icon.py → PyInstaller �
 - 調和內插是「同時更新」的 Jacobi，**不能**配 SOR 鬆弛因子 ω>1（會發散到 1e202）；ω>1 只適用逐點更新的 Gauss-Seidel。
 - DWG→DXF 不要用 `accoreconsole.exe`（中文路徑直接失敗，ASCII 路徑則無聲卡死）。改用 Open CAD Studio 的 `ocs_save_verified(..., target_format="dxf")`：即使回 `semantic_mismatch`（Polyline/Polyline2D 型別重分類）檔案仍可用。
 
+**DTM 來源（`app/dtm.py`）。** 全台 20 m DTM 壓縮檔入版控（`data/dtm20m/taiwan_penghu_dem_20m.zip`，96 MB），第一次用到時解壓到 `data_dir()/dtm/`（開發時是 repo 根目錄的 `dtm/`，已 gitignore），以 zip 的大小＋mtime 當版本指紋自動重解。**不依賴 GDAL/rasterio**：`_read_ifd()` 直接解析 GeoTIFF 標籤，`Raster.read_window()` 用 strip 位移讀需要的列（本檔剛好每列一個 strip，19112 個 strip）。`terrain_grid(x0, y0, x1, y1, dx=10.0)` 回傳 `TerrainGrid`；CLI `python -m app.dtm --bbox xmin,ymin,xmax,ymax --dx 10 --stl out.stl`。
+- GeoTIFF 內容：10175×19112、int16、未壓縮、NODATA = -32767、PixelScale 20 m、Tiepoint 左上角 (148310, 2801730)、EPSG:3826（GeoDoubleParams 的中央子午線 121、尺度 0.9999、假東 250000）。
+- 實測定位正確：玉山 3,946 m（實際 3,952）、台北101 9 m、高雄 2 m。
+- 與崙背測量圖同範圍比對（5 m 網格）：中位差 0.10 m，但掩埋場堆體在測量圖是 26 m、20 m DTM 只到 14 m → **DTM 適合大範圍底色，工程案仍要用測量圖**。
+- 打包：`packaging/3dmaps.spec` 會帶入這個 zip（安裝檔 +96 MB）。spec 的 `excludes` 仍排除 scipy，所以打包版選 `method="tin"` 會發 RuntimeWarning 並退回調和內插——要 TIN 就得把 scipy 從 excludes 移除。
+
 **資料源替換介面**（`app/sources.py`）：`Building` dataclass（`id`、`footprint_rd`、`height_m`、`ground_m`、`year`、`floors`、`status`）與 `SurfaceData` 是下游唯一依賴的型別。只要新資料源能填出這兩個結構，`pipeline.py` 與 `meshing.py` 不必更動。
 
 **3MF 版型。** `app/meshing.py` 的 `write_3mf` 刻意輸出 Bambu/Orca 版型（`3D/Objects/object-1.model` + `Metadata/model_settings.config`），不是 PrusaSlicer 版型；`verify_output.py` 會檢查這一點。

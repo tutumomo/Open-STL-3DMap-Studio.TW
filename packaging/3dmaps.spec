@@ -13,6 +13,11 @@ ROOT = os.path.abspath(os.path.join(SPECPATH, ".."))
 CONSOLE = os.environ.get("BUILD_CONSOLE") == "1"
 
 datas = [(os.path.join(ROOT, "web"), "web")]
+# 全台 20 m DTM 原始壓縮檔（約 96 MB）。程式第一次用到時才解壓到
+# %LOCALAPPDATA%，見 app/dtm.py。打包體積因此增加約 96 MB。
+_dtm_zip = os.path.join(ROOT, "data", "dtm20m", "taiwan_penghu_dem_20m.zip")
+if os.path.exists(_dtm_zip):
+    datas.append((_dtm_zip, os.path.join("data", "dtm20m")))
 binaries = []
 hiddenimports = []
 

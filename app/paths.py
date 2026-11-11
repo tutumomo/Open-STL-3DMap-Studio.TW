@@ -28,6 +28,11 @@ def resource_dir() -> Path:
     return Path(__file__).resolve().parent.parent
 
 
+def bundled_data_dir() -> Path:
+    """隨程式附帶的唯讀資料（目前是全台 20 m DTM 壓縮檔）。"""
+    return resource_dir() / "data"
+
+
 def data_dir() -> Path:
     """Writable working data."""
     if is_frozen():

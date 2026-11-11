@@ -422,6 +422,10 @@ def _resample(z: np.ndarray, ny: int, nx: int) -> np.ndarray:
             + (z[np.ix_(j1, i0)] * (1 - tx) + z[np.ix_(j1, i1)] * tx) * ty)
 
 
+class TinUnavailable(RuntimeError):
+    """環境沒有 scipy，無法使用 TIN 內插（打包版刻意不帶 scipy 以縮小體積）。"""
+
+
 def _build_tin(data: SurveyData, x0: float, y0: float, dx: float,
                nx: int, ny: int) -> np.ndarray:
     """Delaunay TIN（Terén、Civil 3D 等測量軟體的標準做法）。
@@ -433,7 +437,7 @@ def _build_tin(data: SurveyData, x0: float, y0: float, dx: float,
         from scipy.interpolate import LinearNDInterpolator
         from scipy.spatial import Delaunay
     except ImportError as exc:  # scipy 是選用依賴
-        raise RuntimeError("method='tin' 需要 scipy，請先 pip install scipy") from exc
+        raise TinUnavailable("method='tin' 需要 scipy，請先 pip install scipy") from exc
 
     pts: list[np.ndarray] = []
     zs: list[np.ndarray] = []
@@ -493,8 +497,14 @@ def build_terrain(data: SurveyData, *, dx: float = 1.0, margin: float = 0.0,
     ny = max(2, int(math.ceil((y1 - y0) / dx)) + 1)
 
     if method == "tin":
-        z = _build_tin(data, x0, y0, dx, nx, ny)
-        return TerrainGrid(z=z, x0=x0, y0=y0, dx=dx, crs=crs or detect_crs(data))
+        try:
+            z = _build_tin(data, x0, y0, dx, nx, ny)
+            return TerrainGrid(z=z, x0=x0, y0=y0, dx=dx, crs=crs or detect_crs(data))
+        except TinUnavailable as exc:
+            # 打包版不含 scipy，退回調和內插（精度略差但仍可用）
+            import warnings
+            warnings.warn(f"{exc}；改用調和內插", RuntimeWarning, stacklevel=2)
+            method = "harmonic"
 
     factors = [f for f in (8, 4, 2, 1) if f * dx * 4 <= max(x1 - x0, y1 - y0)]
     if not factors:
