@@ -24,3 +24,6 @@ Thumbs.db
 
 # misc
 build_log.txt
+
+# 台灣地形資料（20 m DTM 全台包，約 97 MB，勿入版控）
+data/

@@ -14,3 +14,8 @@ lxml==5.3.0
 # Optioneel: IFC-import (Revit-export). Faalt de installatie, dan werkt de rest
 # gewoon door en kun je in plaats daarvan STL/OBJ/3MF uploaden.
 ifcopenshell==0.8.1
+
+# DWG/DXF 地形圖匯入（app/survey.py）
+ezdxf>=1.4.5
+# 選用：app/survey.py --method tin（Delaunay TIN）需要 scipy
+scipy>=1.14
