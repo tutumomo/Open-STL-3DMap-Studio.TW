@@ -25,5 +25,8 @@ Thumbs.db
 # misc
 build_log.txt
 
-# 台灣地形資料（20 m DTM 全台包，約 97 MB，勿入版控）
-data/
+# 台灣地形資料：全台 20 m DTM 原始壓縮包要納入版控（約 97 MB）
+# 只忽略解壓後的內容（dem_20m.tif 單檔 371 MB，超過 GitHub 單檔 100 MB 上限）
+data/dtm20m/*/
+data/dtm20m/**/*.tif
+data/dtm20m/**/*.tfw
